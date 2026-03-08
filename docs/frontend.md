@@ -22,6 +22,7 @@
 
 ## 三、目录结构（Android Studio 项目标准结构）
 
+```
 android/                          # 前端项目根目录（对应仓库 frontend 文件夹）
 ├── app/                          # 应用模块
 │   ├── src/main/
@@ -43,6 +44,7 @@ android/                          # 前端项目根目录（对应仓库 fronten
 ├── gradle.properties                     # Gradle 全局配置
 ├── local.properties                      # 本地环境配置（SDK 路径，不上传仓库）
 └── settings.gradle                       # 项目模块配置
+```
 
 ## 四、运行方式
 
