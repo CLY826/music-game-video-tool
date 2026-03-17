@@ -18,3 +18,8 @@
 前端: Kotlin
 后端: SpringBoot
 数据库: MySQL
+
+## Figma链接
+
+https://www.figma.com/design/3iQMQdmaMibDckaJgVcz2v/app?node-id=0-1&p=f&t=8SiNL20AhHrDp4QX-0
+
