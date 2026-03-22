@@ -1,0 +1,12 @@
+{
+  "envId": "music-game-video-tool-9a4dacc3e9",
+  "functions": [
+    {
+      "name": "music-api",
+      "path": "./cloudfunctions/music-api",
+      "runtime": "Nodejs16.13",
+      "timeout": 10,
+      "handler": "index.main"
+    }
+  ]
+}

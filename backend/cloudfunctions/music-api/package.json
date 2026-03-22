@@ -1,0 +1,9 @@
+{
+  "name": "music-api",
+  "version": "1.0.0",
+  "description": "音游视频练习助手 API",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.10.0"
+  }
+}
