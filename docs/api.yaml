@@ -1,0 +1,803 @@
+openapi: 3.0.3
+info:
+  title: 音游视频练习助手 API
+  description: 音游视频练习助手后端接口文档
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://{envId}.service.tcloudbase.com/music-api
+    description: CloudBase 云函数生产环境
+    variables:
+      envId:
+        default: your-env-id
+        description: CloudBase 环境ID
+
+tags:
+  - name: Health
+    description: 健康检查
+  - name: Auth
+    description: 用户认证
+  - name: Videos
+    description: 视频管理
+  - name: Marks
+    description: 标记管理
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 使用 JWT Token 进行认证，格式：Bearer {token}
+
+  schemas:
+    # 通用响应
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "错误信息"
+    
+    # 用户相关
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: 用户ID
+        username:
+          type: string
+          description: 用户名
+        email:
+          type: string
+          description: 邮箱
+        avatar:
+          type: string
+          nullable: true
+          description: 头像URL
+        createdAt:
+          type: string
+          format: date-time
+          description: 注册时间
+        lastLoginAt:
+          type: string
+          format: date-time
+          description: 最后登录时间
+    
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          description: 用户名
+          example: "音游玩家"
+        email:
+          type: string
+          format: email
+          description: 邮箱
+          example: "player@example.com"
+        password:
+          type: string
+          minLength: 6
+          maxLength: 20
+          description: 密码
+          example: "123456"
+    
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: 邮箱
+          example: "player@example.com"
+        password:
+          type: string
+          description: 密码
+          example: "123456"
+    
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              description: JWT Token
+            user:
+              $ref: '#/components/schemas/User'
+    
+    # 视频相关
+    Video:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: 视频ID
+        title:
+          type: string
+          description: 视频标题
+        gameName:
+          type: string
+          description: 游戏名称
+        cloudUrl:
+          type: string
+          description: 云存储地址
+        coverUrl:
+          type: string
+          nullable: true
+          description: 封面图地址
+        duration:
+          type: number
+          nullable: true
+          description: 视频时长（毫秒）
+        userId:
+          type: string
+          description: 上传者ID
+        username:
+          type: string
+          description: 上传者用户名
+        uploadTime:
+          type: string
+          format: date-time
+          description: 上传时间
+    
+    CreateVideoRequest:
+      type: object
+      required:
+        - title
+        - gameName
+        - cloudUrl
+      properties:
+        title:
+          type: string
+          description: 视频标题
+          example: "Arcaea 魔王曲练习"
+        gameName:
+          type: string
+          description: 游戏名称
+          example: "Arcaea"
+        cloudUrl:
+          type: string
+          description: 云存储地址
+          example: "https://xxx.com/videos/arcaea.mp4"
+        coverUrl:
+          type: string
+          description: 封面图地址
+          example: "https://xxx.com/covers/arcaea.jpg"
+        duration:
+          type: number
+          description: 视频时长（毫秒）
+          example: 180000
+    
+    VideoListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Video'
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            pages:
+              type: integer
+    
+    VideoDetailResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          allOf:
+            - $ref: '#/components/schemas/Video'
+            - type: object
+              properties:
+                marks:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Mark'
+    
+    # 标记相关
+    Mark:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: 标记ID
+        videoId:
+          type: string
+          description: 关联视频ID
+        startTime:
+          type: number
+          description: 起始时间（毫秒）
+        endTime:
+          type: number
+          description: 结束时间（毫秒）
+        label:
+          type: string
+          description: 标记名称
+        notes:
+          type: string
+          nullable: true
+          description: 备注说明
+        color:
+          type: string
+          description: 标记颜色
+          example: "#FF5722"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    CreateMarkRequest:
+      type: object
+      required:
+        - videoId
+        - startTime
+        - endTime
+      properties:
+        videoId:
+          type: string
+          description: 视频ID
+        startTime:
+          type: number
+          description: 起始时间（毫秒）
+          example: 45000
+        endTime:
+          type: number
+          description: 结束时间（毫秒）
+          example: 52000
+        label:
+          type: string
+          description: 标记名称
+          example: "难点段落"
+        notes:
+          type: string
+          description: 备注说明
+          example: "注意这里的手速"
+        color:
+          type: string
+          description: 标记颜色
+          example: "#FF5722"
+    
+    UpdateMarkRequest:
+      type: object
+      properties:
+        startTime:
+          type: number
+          description: 起始时间（毫秒）
+        endTime:
+          type: number
+          description: 结束时间（毫秒）
+        label:
+          type: string
+          description: 标记名称
+        notes:
+          type: string
+          description: 备注说明
+        color:
+          type: string
+          description: 标记颜色
+    
+    SyncMarksRequest:
+      type: object
+      required:
+        - marks
+      properties:
+        marks:
+          type: array
+          items:
+            type: object
+            properties:
+              videoId:
+                type: string
+              startTime:
+                type: number
+              endTime:
+                type: number
+              label:
+                type: string
+              syncStatus:
+                type: string
+                enum: [pending, synced]
+    
+    SyncMarksResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            synced:
+              type: integer
+            failed:
+              type: integer
+
+paths:
+  # 健康检查
+  /health:
+    get:
+      tags:
+        - Health
+      summary: 健康检查
+      description: 检查服务是否正常运行
+      responses:
+        '200':
+          description: 服务正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+                  message:
+                    type: string
+                    example: "CloudBase 服务运行正常"
+
+  # 用户认证
+  /api/auth/register:
+    post:
+      tags:
+        - Auth
+      summary: 用户注册
+      description: 创建新用户账号
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: 参数错误或用户已存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: 用户登录
+      description: 使用邮箱和密码登录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: 邮箱或密码错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/me:
+    get:
+      tags:
+        - Auth
+      summary: 获取当前用户信息
+      description: 获取已登录用户的个人信息
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # 视频管理
+  /api/videos:
+    get:
+      tags:
+        - Videos
+      summary: 获取视频列表
+      description: 获取所有视频，支持按游戏名称筛选和分页
+      parameters:
+        - name: gameName
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 按游戏名称筛选
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: 页码
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: 每页数量
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoListResponse'
+    
+    post:
+      tags:
+        - Videos
+      summary: 创建视频记录
+      description: 上传视频后创建视频记录
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVideoRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Video'
+        '400':
+          description: 参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/videos/{id}:
+    get:
+      tags:
+        - Videos
+      summary: 获取单个视频详情
+      description: 获取视频详细信息，包括关联的标记
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 视频ID
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoDetailResponse'
+        '404':
+          description: 视频不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    delete:
+      tags:
+        - Videos
+      summary: 删除视频
+      description: 删除视频记录（仅创建者可删除）
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 视频ID
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 无权限（非创建者）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 视频不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # 标记管理
+  /api/marks/{videoId}:
+    get:
+      tags:
+        - Marks
+      summary: 获取视频的所有标记
+      description: 获取指定视频的所有标记点
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 视频ID
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Mark'
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/marks:
+    post:
+      tags:
+        - Marks
+      summary: 创建标记
+      description: 为视频创建新的标记点
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMarkRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Mark'
+        '400':
+          description: 参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/marks/{id}:
+    put:
+      tags:
+        - Marks
+      summary: 更新标记
+      description: 更新标记信息（仅创建者可修改）
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 标记ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMarkRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Mark'
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 无权限（非创建者）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 标记不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    delete:
+      tags:
+        - Marks
+      summary: 删除标记
+      description: 删除标记点（仅创建者可删除）
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 标记ID
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 无权限（非创建者）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 标记不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/marks/sync:
+    post:
+      tags:
+        - Marks
+      summary: 批量同步标记
+      description: 批量同步本地标记到云端
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncMarksRequest'
+      responses:
+        '200':
+          description: 同步成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncMarksResponse'
+        '401':
+          description: 未认证
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
