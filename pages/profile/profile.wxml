@@ -1,0 +1,169 @@
+<!--pages/profile/profile.wxml-->
+<view class="profile-wrap">
+
+  <!-- 用户信息卡 -->
+  <view class="user-card">
+    <view class="user-info-row">
+      <view class="avatar-wrap">
+        <image
+          wx:if="{{userInfo && userInfo.avatarUrl}}"
+          class="user-avatar"
+          src="{{userInfo.avatarUrl}}"
+          mode="aspectFill"
+        />
+        <view wx:else class="avatar-default">🎵</view>
+      </view>
+      <view class="user-detail">
+        <text class="user-name">{{userInfo ? userInfo.nickName : '音游玩家'}}</text>
+        <text class="user-sub">openid: {{openid ? openid.slice(0,12) + '...' : '加载中'}}</text>
+      </view>
+    </view>
+
+    <!-- 统计 -->
+    <view class="user-stats">
+      <view class="stat-block" bindtap="onTabChange" data-tab="videos">
+        <text class="stat-num">{{videoCount}}</text>
+        <text class="stat-label">发布视频</text>
+      </view>
+      <view class="stat-block" bindtap="onTabChange" data-tab="favorites">
+        <text class="stat-num">{{favoriteCount}}</text>
+        <text class="stat-label">收藏视频</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Tab 切换 -->
+  <view class="tab-bar">
+    <view
+      class="tab-item {{activeTab === 'videos' ? 'tab-active' : ''}}"
+      bindtap="onTabChange"
+      data-tab="videos"
+    >我发布的</view>
+    <view
+      class="tab-item {{activeTab === 'favorites' ? 'tab-active' : ''}}"
+      bindtap="onTabChange"
+      data-tab="favorites"
+    >我收藏的</view>
+  </view>
+
+  <!-- 我发布的视频 -->
+  <view class="content-section" wx:if="{{activeTab === 'videos'}}">
+    <view class="section-header">
+      <text class="section-title">我发布的视频</text>
+      <view class="upload-mini-btn" bindtap="goUpload">+ 上传</view>
+    </view>
+
+    <view wx:if="{{loading}}" class="loading-wrap">
+      <view class="loading-dot"></view>
+    </view>
+
+    <view wx:elif="{{myVideos.length === 0}}" class="empty-state">
+      <text class="icon">📤</text>
+      <text class="tip">还没有上传视频</text>
+      <view class="go-upload-btn" bindtap="goUpload">立即上传</view>
+    </view>
+
+    <view wx:else>
+      <view
+        wx:for="{{myVideos}}"
+        wx:key="_id"
+        class="my-video-item"
+      >
+        <!-- 点击封面进入播放 -->
+        <view
+          class="my-video-left"
+          bindtap="onVideoTap"
+          data-video-id="{{item._id}}"
+        >
+          <view class="my-thumb">
+            <image
+              wx:if="{{item.thumbUrl}}"
+              class="my-thumb-img"
+              src="{{item.thumbUrl}}"
+              mode="aspectFill"
+            />
+            <view wx:else class="my-thumb-ph">▶</view>
+          </view>
+        </view>
+        <view
+          class="my-video-info"
+          bindtap="onVideoTap"
+          data-video-id="{{item._id}}"
+        >
+          <text class="my-video-title">{{item.songName}}</text>
+          <text class="my-video-game">{{item.gameName}}</text>
+          <text class="my-video-time">{{item.createTimeText}}</text>
+          <text class="my-video-comment">💬 {{item.commentCount || 0}} 条评论</text>
+        </view>
+        <!-- 删除按钮 -->
+        <view
+          class="delete-btn"
+          catchtap="onDeleteVideo"
+          data-video-id="{{item._id}}"
+          data-file-id="{{item.videoFileId}}"
+          data-thumb-file-id="{{item.thumbFileId}}"
+          data-game-id="{{item.gameId}}"
+        >🗑</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 我收藏的视频 -->
+  <view class="content-section" wx:if="{{activeTab === 'favorites'}}">
+    <view class="section-header">
+      <text class="section-title">我收藏的视频</text>
+    </view>
+
+    <view wx:if="{{loading}}" class="loading-wrap">
+      <view class="loading-dot"></view>
+    </view>
+
+    <view wx:elif="{{myFavorites.length === 0}}" class="empty-state">
+      <text class="icon">♡</text>
+      <text class="tip">还没有收藏任何视频</text>
+      <text class="tip-sub">在视频播放页点击♡按钮即可收藏</text>
+    </view>
+
+    <view wx:else>
+      <view
+        wx:for="{{myFavorites}}"
+        wx:key="_id"
+        class="my-video-item"
+      >
+        <!-- 点击进入播放 -->
+        <view
+          class="my-video-left"
+          bindtap="onFavTap"
+          data-video-id="{{item.videoId}}"
+        >
+          <view class="my-thumb">
+            <image
+              wx:if="{{item.thumbUrl}}"
+              class="my-thumb-img"
+              src="{{item.thumbUrl}}"
+              mode="aspectFill"
+            />
+            <view wx:else class="my-thumb-ph">▶</view>
+          </view>
+        </view>
+        <view
+          class="my-video-info"
+          bindtap="onFavTap"
+          data-video-id="{{item.videoId}}"
+        >
+          <text class="my-video-title">{{item.songName}}</text>
+          <text class="my-video-game" style="color:{{item.gameColor}}">{{item.gameName}}</text>
+          <text class="my-video-time">收藏于 {{item.createTimeText}}</text>
+          <text class="my-video-uploader">by {{item.uploaderName}}</text>
+        </view>
+        <!-- 取消收藏按钮 -->
+        <view
+          class="unfav-btn"
+          catchtap="onUnfavorite"
+          data-fav-id="{{item._id}}"
+        >♥</view>
+      </view>
+    </view>
+  </view>
+
+</view>

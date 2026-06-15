@@ -1,0 +1,9 @@
+{
+  "name": "aiPolish",
+  "version": "1.0.0",
+  "description": "AI 润色备注文本 - 调用腾讯混元大模型",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -1,0 +1,117 @@
+<!--pages/index/index.wxml - 首页布局-->
+<view class="index-wrap">
+
+  <!-- 顶部 header -->
+  <view class="header">
+    <view class="header-title">
+      <text class="logo">🎵</text>
+      <text class="title-text">音游练习助手</text>
+    </view>
+    <!-- 搜索框 -->
+    <view class="search-bar">
+      <view class="search-inner">
+        <text class="search-icon">🔍</text>
+        <input
+          class="search-input"
+          placeholder="搜索歌曲名称..."
+          placeholder-class="search-placeholder"
+          value="{{searchKeyword}}"
+          bindinput="onSearchInput"
+          bindconfirm="onSearchConfirm"
+          confirm-type="search"
+        />
+        <view class="search-btn" bindtap="onSearchConfirm">搜索</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="quick-actions card">
+    <view class="action-item" bindtap="goUpload">
+      <view class="action-icon upload-icon">⬆️</view>
+      <text class="action-label">上传视频</text>
+    </view>
+    <view class="action-item" bindtap="onSearchConfirm">
+      <view class="action-icon search-action-icon">🔍</view>
+      <text class="action-label">搜索歌曲</text>
+    </view>
+    <view class="action-item" bindtap="onGameTap" data-game-name="全部" data-game-id="">
+      <view class="action-icon all-icon">🎮</view>
+      <text class="action-label">全部视频</text>
+    </view>
+  </view>
+
+  <!-- 音游分类 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">音游分类</text>
+    </view>
+    <scroll-view scroll-x class="games-scroll" show-scrollbar="{{false}}">
+      <view class="games-list">
+        <view
+          wx:for="{{games}}"
+          wx:key="_id"
+          class="game-item"
+          bindtap="onGameTap"
+          data-game-id="{{item._id}}"
+          data-game-name="{{item.name}}"
+        >
+          <view class="game-icon" style="background:{{item.color}}20;border-color:{{item.color}}40">
+            <text class="game-emoji">{{item.icon}}</text>
+          </view>
+          <text class="game-name">{{item.name}}</text>
+          <text class="game-count">{{item.videoCount || 0}} 个</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 最新视频 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">最新上传</text>
+    </view>
+    <view wx:if="{{loading}}" class="loading-wrap">
+      <view class="loading-dot"></view>
+    </view>
+    <view wx:elif="{{recentVideos.length === 0}}" class="empty-state">
+      <text class="icon">🎬</text>
+      <text class="tip">暂无视频，快去上传第一个吧！</text>
+    </view>
+    <view wx:else class="video-grid">
+      <view
+        wx:for="{{recentVideos}}"
+        wx:key="_id"
+        class="video-card card"
+        bindtap="onVideoTap"
+        data-video-id="{{item._id}}"
+      >
+        <!-- 封面 -->
+        <view class="thumb-wrap">
+          <image
+            wx:if="{{item.thumbUrl}}"
+            class="video-thumb"
+            src="{{item.thumbUrl}}"
+            mode="aspectFill"
+          />
+          <view wx:else class="thumb-placeholder">
+            <text class="thumb-icon">▶</text>
+          </view>
+          <view class="duration-badge" wx:if="{{item.duration}}">
+            {{item.durationText}}
+          </view>
+        </view>
+        <!-- 信息 -->
+        <view class="video-info">
+          <text class="video-title">{{item.songName}}</text>
+          <view class="video-meta">
+            <text class="game-tag" style="color:{{item.gameColor}}">{{item.gameName}}</text>
+            <text class="upload-time">{{item.createTimeText}}</text>
+          </view>
+          <text class="uploader">by {{item.uploaderName || '匿名用户'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+</view>

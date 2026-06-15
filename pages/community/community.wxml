@@ -1,0 +1,95 @@
+<!--pages/community/community.wxml-->
+<view class="community-wrap">
+
+  <!-- 头部 -->
+  <view class="community-header">
+    <view>
+      <text class="header-title">玩家社区</text>
+      <text class="header-sub">分享你的练习视频，与同好交流</text>
+    </view>
+    <view class="upload-entry-btn" bindtap="goUpload">
+      <text>+ 上传</text>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading && videos.length === 0}}" class="loading-wrap">
+    <view class="loading-dot"></view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:elif="{{videos.length === 0}}" class="empty-state">
+    <text class="icon">🎮</text>
+    <text class="tip">社区还没有内容\n成为第一个分享的人吧！</text>
+    <view class="upload-first-btn" bindtap="goUpload">去上传视频</view>
+  </view>
+
+  <!-- 视频列表（信息流式布局） -->
+  <view wx:else class="feed-list">
+    <view
+      wx:for="{{videos}}"
+      wx:key="_id"
+      class="feed-card"
+      bindtap="onVideoTap"
+      data-video-id="{{item._id}}"
+    >
+      <!-- 封面 -->
+      <view class="feed-thumb-wrap">
+        <image
+          wx:if="{{item.thumbUrl}}"
+          class="feed-thumb"
+          src="{{item.thumbUrl}}"
+          mode="aspectFill"
+          lazy-load="{{true}}"
+        />
+        <view wx:else class="feed-thumb-ph">
+          <text class="ph-icon">▶</text>
+        </view>
+        <!-- 时长 -->
+        <view class="feed-duration" wx:if="{{item.durationText}}">
+          {{item.durationText}}
+        </view>
+        <!-- 音游标签 -->
+        <view class="feed-game-badge" style="background:{{item.gameColor}}cc">
+          {{item.gameName}}
+        </view>
+      </view>
+
+      <!-- 信息 -->
+      <view class="feed-info">
+        <view class="feed-row1">
+          <!-- 头像 -->
+          <view class="feed-avatar-wrap">
+            <image
+              wx:if="{{item.uploaderAvatar}}"
+              class="feed-avatar"
+              src="{{item.uploaderAvatar}}"
+              mode="aspectFill"
+            />
+            <view wx:else class="feed-avatar-ph">
+              <text>{{item.uploaderName ? item.uploaderName.slice(0,1) : '?'}}</text>
+            </view>
+          </view>
+          <view class="feed-meta">
+            <text class="feed-uploader">{{item.uploaderName || '匿名用户'}}</text>
+            <text class="feed-time">{{item.createTimeText}}</text>
+          </view>
+        </view>
+
+        <text class="feed-title">{{item.songName}}</text>
+        <text class="feed-desc" wx:if="{{item.desc}}">{{item.desc}}</text>
+
+        <view class="feed-stats">
+          <text class="stat-item">💬 {{item.commentCount || 0}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{loading}}" class="loading-wrap">
+      <view class="loading-dot"></view>
+    </view>
+    <view wx:elif="{{!hasMore}}" class="no-more">已经到底了~</view>
+  </view>
+
+</view>

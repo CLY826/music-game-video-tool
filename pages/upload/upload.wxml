@@ -1,0 +1,100 @@
+<!--pages/upload/upload.wxml-->
+<view class="upload-wrap">
+
+  <!-- 视频选择区 -->
+  <view class="section-card">
+    <text class="field-label required">选择视频</text>
+    <view
+      class="video-picker {{videoSrc ? 'has-video' : ''}}"
+      bindtap="chooseVideo"
+    >
+      <video
+        wx:if="{{videoSrc}}"
+        class="preview-video"
+        src="{{videoSrc}}"
+        show-center-play-btn="{{true}}"
+        enable-progress-gesture="{{false}}"
+        controls="{{false}}"
+      ></video>
+      <view wx:else class="picker-placeholder">
+        <text class="picker-icon">📁</text>
+        <text class="picker-tip">点击选择本地视频</text>
+        <text class="picker-sub">支持 MP4 等格式，最长 10 分钟</text>
+      </view>
+
+      <!-- 重新选择 -->
+      <view wx:if="{{videoSrc}}" class="re-select-tag">重新选择</view>
+    </view>
+    <!-- 视频信息 -->
+    <view wx:if="{{videoSrc}}" class="video-meta-row">
+      <text class="meta-item">时长：{{videoDuration}}秒</text>
+      <text class="meta-item">大小：{{videoSizeMB}} MB</text>
+    </view>
+  </view>
+
+  <!-- 歌曲名称 -->
+  <view class="section-card">
+    <text class="field-label required">歌曲名称</text>
+    <input
+      class="field-input"
+      placeholder="请输入歌曲名称"
+      placeholder-class="field-ph"
+      value="{{songName}}"
+      bindinput="onSongNameInput"
+      maxlength="50"
+    />
+  </view>
+
+  <!-- 选择音游 -->
+  <view class="section-card">
+    <text class="field-label required">所属音游</text>
+    <picker
+      class="game-picker"
+      mode="selector"
+      range="{{gameRange}}"
+      value="{{gameIndex}}"
+      bindchange="onGameChange"
+    >
+      <view class="picker-show">
+        <text class="picker-value">{{gameName}}</text>
+        <text class="picker-arrow">›</text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 说明/备注 -->
+  <view class="section-card">
+    <view class="field-label-row">
+      <text class="field-label">备注说明</text>
+      <view class="ai-polish-btn {{polishing ? 'polishing' : ''}} {{desc.trim() ? '' : 'disabled'}}" bindtap="aiPolish">
+        <view wx:if="{{polishing}}" class="polish-spinner"></view>
+        <text wx:else class="polish-icon">✨</text>
+        <text class="polish-text">{{polishing ? '润色中...' : 'AI润色'}}</text>
+      </view>
+    </view>
+    <textarea
+      class="field-textarea"
+      placeholder="可以注明难点位置、练习目的等（选填）"
+      placeholder-class="field-ph"
+      value="{{desc}}"
+      bindinput="onDescInput"
+      maxlength="200"
+      auto-height="{{true}}"
+    />
+  </view>
+
+  <!-- 上传按钮 -->
+  <view class="upload-btn-wrap">
+    <view
+      class="upload-btn {{uploading ? 'disabled' : ''}}"
+      bindtap="doUpload"
+    >
+      <view wx:if="{{uploading}}" class="btn-loading">
+        <view class="btn-spinner"></view>
+        <text>上传中 {{uploadProgress}}%</text>
+      </view>
+      <text wx:else>⬆ 立即上传</text>
+    </view>
+  </view>
+
+</view>

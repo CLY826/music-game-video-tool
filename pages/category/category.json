@@ -1,0 +1,5 @@
+{
+  "navigationBarTitleText": "分类视频",
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 100
+}

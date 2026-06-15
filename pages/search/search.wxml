@@ -1,0 +1,68 @@
+<!--pages/search/search.wxml-->
+<view class="search-wrap">
+
+  <!-- 搜索框 -->
+  <view class="search-header">
+    <view class="search-bar-wrap">
+      <text class="search-ico">🔍</text>
+      <input
+        class="search-ipt"
+        placeholder="输入歌曲名称搜索..."
+        placeholder-class="search-ph"
+        value="{{keyword}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+        focus="{{true}}"
+        confirm-type="search"
+      />
+      <view wx:if="{{keyword}}" class="clear-btn" bindtap="onClear">✕</view>
+    </view>
+    <view class="search-submit-btn" bindtap="onSearchConfirm">搜索</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-wrap">
+    <view class="loading-dot"></view>
+    <text class="loading-text">搜索中...</text>
+  </view>
+
+  <!-- 搜索结果 -->
+  <view wx:elif="{{searched}}">
+    <view class="result-count" wx:if="{{results.length > 0}}">
+      找到 <text class="count-num">{{results.length}}</text> 个相关视频
+    </view>
+
+    <view
+      wx:for="{{results}}"
+      wx:key="_id"
+      class="result-item card"
+      bindtap="onVideoTap"
+      data-video-id="{{item._id}}"
+    >
+      <view class="result-thumb">
+        <image wx:if="{{item.thumbUrl}}" src="{{item.thumbUrl}}" mode="aspectFill" class="result-thumb-img"/>
+        <view wx:else class="result-thumb-ph">▶</view>
+      </view>
+      <view class="result-info">
+        <rich-text class="result-title" nodes="{{item.highlightName}}"></rich-text>
+        <text class="result-game">{{item.gameName}}</text>
+        <view class="result-meta">
+          <text class="result-uploader">by {{item.uploaderName || '匿名'}}</text>
+          <text class="result-time">{{item.createTimeText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 无结果 -->
+    <view wx:if="{{results.length === 0}}" class="empty-state">
+      <text class="icon">🔎</text>
+      <text class="tip">没有找到相关视频\n换个关键词试试？</text>
+    </view>
+  </view>
+
+  <!-- 未搜索时引导 -->
+  <view wx:elif="{{!loading && !searched}}" class="guide">
+    <text class="guide-tip">输入歌曲名称开始搜索</text>
+  </view>
+
+</view>

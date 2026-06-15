@@ -1,0 +1,223 @@
+<!--pages/player/player.wxml - 播放页（含AB循环、变速、评论）-->
+<view wx:if="{{loading}}" class="loading-full">
+  <view class="loading-dot"></view>
+  <text class="loading-text">加载中...</text>
+</view>
+
+<view wx:else class="player-wrap {{isFullscreen ? 'fake-fs' : ''}}">
+
+  <!-- 视频播放器 -->
+  <view class="video-container {{isFullscreen ? 'fake-fullscreen' : ''}}">
+    <video
+      id="mainVideo"
+      src="{{videoUrl}}"
+      class="main-video"
+      object-fit="contain"
+      enable-progress-gesture="{{false}}"
+      show-center-play-btn="{{false}}"
+      show-mute-btn="{{false}}"
+      show-fullscreen-btn="{{false}}"
+      controls="{{false}}"
+      bindplay="onVideoPlay"
+      bindpause="onVideoPause"
+      bindended="onVideoEnded"
+      binderror="onVideoError"
+      bindtimeupdate="onVideoTimeUpdate"
+    ></video>
+
+    <!-- AB循环标识 -->
+    <view class="ab-indicator" wx:if="{{loopEnabled && !isFullscreen}}">
+      <text class="ab-badge">AB 循环中 ×{{loopCount}}</text>
+    </view>
+
+    <!-- 全屏悬浮控制层（仅全屏时显示） -->
+    <view class="fullscreen-overlay" wx:if="{{isFullscreen}}">
+      <!-- 左上角：退出全屏 -->
+      <view class="fs-exit-btn" bindtap="exitFullscreen">
+        <text class="fs-icon">✕</text>
+        <text class="fs-label">退出全屏</text>
+      </view>
+
+      <!-- 右上角：播放/暂停 -->
+      <view class="fs-play-btn" bindtap="togglePlay">
+        <text class="fs-play-icon">{{playing ? '⏸' : '▶'}}</text>
+      </view>
+
+      <!-- AB 循环角标 -->
+      <view class="fs-ab-badge" wx:if="{{loopEnabled}}">
+        <text>AB ×{{loopCount}}</text>
+      </view>
+    </view>
+
+    <!-- 非全屏时的全屏按钮（视频右下角） -->
+    <view class="fullscreen-btn" bindtap="enterFullscreen" wx:if="{{!isFullscreen}}">
+      <text class="fullscreen-icon">⛶</text>
+    </view>
+  </view>
+
+  <!-- 全屏时遮挡下方内容（CSS模拟全屏用） -->
+  <view class="fake-fullscreen-mask" wx:if="{{isFullscreen}}" bindtap="exitFullscreen"></view>
+
+  <!-- 歌曲信息 -->
+  <view class="info-section">
+    <view class="song-header">
+      <view class="song-info">
+        <text class="song-name">{{video.songName}}</text>
+        <text class="game-tag" style="color:{{video.gameColor}}">{{video.gameName}}</text>
+      </view>
+      <view class="info-right">
+        <text class="uploader-tip">by {{video.uploaderName}}</text>
+        <!-- 收藏按钮 -->
+        <view class="fav-btn {{isFavorited ? 'fav-active' : ''}}" bindtap="toggleFavorite">
+          <text class="fav-icon">{{isFavorited ? '♥' : '♡'}}</text>
+          <text class="fav-label">{{isFavorited ? '已收藏' : '收藏'}}</text>
+        </view>
+      </view>
+    </view>
+    <text class="song-desc" wx:if="{{video.desc}}">{{video.desc}}</text>
+  </view>
+
+  <!-- 自定义进度条 + 播放/暂停 -->
+  <view class="progress-section">
+    <!-- 播放/暂停按钮 -->
+    <view class="play-pause-btn" bindtap="togglePlay">
+      <text class="play-pause-icon">{{playing ? '⏸' : '▶'}}</text>
+    </view>
+    <text class="time-label">{{currentTimeText}}</text>
+    <slider
+      class="progress-slider"
+      min="0"
+      max="100"
+      value="{{progressPercent}}"
+      activeColor="#6c63ff"
+      backgroundColor="#e0e0e0"
+      block-color="#6c63ff"
+      block-size="14"
+      bindchange="onProgressChange"
+    />
+    <text class="time-label">{{durationText}}</text>
+
+    <!-- AB 点标记线（视觉） -->
+    <view class="ab-markers" wx:if="{{pointA !== null && duration > 0}}">
+      <view
+        class="marker-a"
+        style="left: {{(pointA / duration * 100)}}%"
+      ><text class="marker-label">A</text></view>
+      <view
+        class="marker-b"
+        wx:if="{{pointB !== null}}"
+        style="left: {{(pointB / duration * 100)}}%"
+      ><text class="marker-label">B</text></view>
+    </view>
+  </view>
+
+  <!-- 变速控制 -->
+  <view class="rate-section">
+    <text class="ctrl-title">播放速度</text>
+    <view class="rate-list">
+      <view
+        wx:for="{{rateOptions}}"
+        wx:key="*this"
+        class="rate-btn {{playbackRate == item ? 'active' : ''}}"
+        bindtap="onRateTap"
+        data-rate="{{item}}"
+      >
+        <text>{{item}}x</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- AB 循环控制 -->
+  <view class="ab-section">
+    <text class="ctrl-title">AB 区间循环</text>
+    <view class="ab-controls">
+      <view class="ab-row">
+        <view class="ab-point-btn a-btn" bindtap="setPointA">
+          <text class="ab-btn-label">标记 A</text>
+          <text class="ab-point-time">{{pointAText}}</text>
+        </view>
+        <view class="ab-point-btn b-btn" bindtap="setPointB">
+          <text class="ab-btn-label">标记 B</text>
+          <text class="ab-point-time">{{pointBText}}</text>
+        </view>
+        <view class="ab-clear-btn" bindtap="clearAB">清除</view>
+      </view>
+      <view
+        class="loop-toggle-btn {{loopEnabled ? 'on' : 'off'}}"
+        bindtap="toggleLoop"
+      >
+        <text class="loop-icon">🔁</text>
+        <text class="loop-text">{{loopEnabled ? '循环中（点击关闭）' : '开启AB循环'}}</text>
+      </view>
+    </view>
+
+    <!-- AB 循环说明 -->
+    <view class="ab-tip">
+      <text>① 播放到难点前点击「标记A」</text>
+      <text>② 播放到难点后点击「标记B」</text>
+      <text>③ 点击「开启AB循环」反复练习</text>
+    </view>
+  </view>
+
+  <!-- 评论区 -->
+  <view class="comment-section">
+    <text class="ctrl-title">评论区 ({{video.commentCount || 0}}条)</text>
+
+    <!-- 评论输入框 -->
+    <view class="comment-input-row">
+      <input
+        class="comment-input"
+        placeholder="输入评论..."
+        placeholder-class="comment-ph"
+        value="{{commentInput}}"
+        bindinput="onCommentInput"
+        confirm-type="send"
+        bindconfirm="submitComment"
+      />
+      <view class="comment-send-btn" bindtap="submitComment">发送</view>
+    </view>
+
+    <!-- 评论列表 -->
+    <view wx:if="{{commentLoading && comments.length === 0}}" class="loading-wrap">
+      <view class="loading-dot"></view>
+    </view>
+    <view wx:elif="{{comments.length === 0}}" class="empty-comment">
+      <text>暂无评论，快来抢沙发！</text>
+    </view>
+    <view wx:else>
+      <view
+        wx:for="{{comments}}"
+        wx:key="_id"
+        class="comment-item"
+      >
+        <view class="comment-avatar-wrap">
+          <image
+            wx:if="{{item.authorAvatar}}"
+            class="comment-avatar"
+            src="{{item.authorAvatar}}"
+            mode="aspectFill"
+          />
+          <view wx:else class="comment-avatar-ph">
+            <text>{{item.authorName.slice(0,1)}}</text>
+          </view>
+        </view>
+        <view class="comment-body">
+          <view class="comment-meta">
+            <text class="comment-author">{{item.authorName}}</text>
+            <text class="comment-time">{{item.createTimeText}}</text>
+          </view>
+          <text class="comment-content">{{item.content}}</text>
+        </view>
+      </view>
+
+      <!-- 加载更多 -->
+      <view
+        wx:if="{{commentHasMore}}"
+        class="load-more"
+        bindtap="loadComments"
+      >加载更多评论</view>
+      <view wx:else class="no-more">已显示全部评论</view>
+    </view>
+  </view>
+
+</view>

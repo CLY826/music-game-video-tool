@@ -1,0 +1,67 @@
+<!--pages/category/category.wxml-->
+<view class="category-wrap">
+
+  <!-- 排序栏 -->
+  <view class="sort-bar">
+    <view
+      class="sort-item {{sortBy === 'createTime' ? 'active' : ''}}"
+      bindtap="onSortChange"
+      data-sort="createTime"
+    >最新</view>
+    <view
+      class="sort-item {{sortBy === 'songName' ? 'active' : ''}}"
+      bindtap="onSortChange"
+      data-sort="songName"
+    >歌曲名</view>
+  </view>
+
+  <!-- 视频列表 -->
+  <view wx:if="{{loading && videos.length === 0}}" class="loading-wrap">
+    <view class="loading-dot"></view>
+  </view>
+
+  <view wx:elif="{{videos.length === 0}}" class="empty-state">
+    <text class="icon">🎬</text>
+    <text class="tip">该分类暂无视频\n快去上传第一个吧！</text>
+  </view>
+
+  <view wx:else>
+    <view
+      wx:for="{{videos}}"
+      wx:key="_id"
+      class="video-list-item card"
+      bindtap="onVideoTap"
+      data-video-id="{{item._id}}"
+    >
+      <!-- 封面 -->
+      <view class="list-thumb">
+        <image
+          wx:if="{{item.thumbUrl}}"
+          src="{{item.thumbUrl}}"
+          mode="aspectFill"
+          class="list-thumb-img"
+        />
+        <view wx:else class="list-thumb-placeholder">
+          <text>▶</text>
+        </view>
+      </view>
+      <!-- 信息 -->
+      <view class="list-info">
+        <text class="list-title">{{item.songName}}</text>
+        <text class="list-game">{{item.gameName}}</text>
+        <view class="list-meta">
+          <text class="list-uploader">by {{item.uploaderName || '匿名'}}</text>
+          <text class="list-time">{{item.createTimeText}}</text>
+        </view>
+        <text class="list-desc" wx:if="{{item.desc}}">{{item.desc}}</text>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{loading}}" class="loading-wrap">
+      <view class="loading-dot"></view>
+    </view>
+    <view wx:elif="{{!hasMore}}" class="no-more">没有更多了</view>
+  </view>
+
+</view>

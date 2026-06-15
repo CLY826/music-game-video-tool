@@ -1,0 +1,15 @@
+{
+  "name": "rhythm-practice-tests",
+  "version": "1.0.0",
+  "description": "音游练习辅助小程序 - 软件测试作业",
+  "scripts": {
+    "test:backend": "jest --config jest.backend.config.js --coverage",
+    "test:frontend": "jest --config jest.frontend.config.js --coverage",
+    "test:all": "jest --config jest.backend.config.js --coverage && jest --config jest.frontend.config.js --coverage",
+    "test": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-node": "^29.7.0"
+  }
+}
