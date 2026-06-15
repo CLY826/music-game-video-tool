@@ -1,7 +1,6 @@
 # 小程序前端依赖
 node_modules/
 miniprogram_npm/
-package-lock.json
 yarn.lock
 
 # 云函数依赖
