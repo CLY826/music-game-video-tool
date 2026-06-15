@@ -136,7 +136,7 @@ Page({
             myFavorites: this.data.myFavorites.filter(f => f._id !== favId),
             favoriteCount: this.data.favoriteCount - 1
           });
-        } catch (e) {
+        } catch {
           wx.showToast({ title: '操作失败', icon: 'none' });
         }
       }

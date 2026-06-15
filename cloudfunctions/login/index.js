@@ -5,7 +5,7 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const db = cloud.database();
 
-exports.main = async (event, context) => {
+exports.main = async (_event, _context) => {
   const { OPENID, APPID } = cloud.getWXContext();
 
   try {

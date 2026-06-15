@@ -4,7 +4,7 @@ const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 
-exports.main = async (event, context) => {
+exports.main = async (event, _context) => {
   const { OPENID } = cloud.getWXContext();
   const { videoId, content, authorName = '匿名用户', authorAvatar = '' } = event;
 

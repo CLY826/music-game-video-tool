@@ -1,6 +1,5 @@
 // pages/search/search.js - 搜索页
 const db = wx.cloud.database();
-const _ = db.command;
 
 Page({
   data: {

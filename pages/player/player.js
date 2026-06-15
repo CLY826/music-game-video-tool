@@ -144,7 +144,7 @@ Page({
         await db.collection('favorite').doc(favoriteId).remove();
         this.setData({ isFavorited: false, favoriteId: '' });
         wx.showToast({ title: '已取消收藏', icon: 'none' });
-      } catch (e) {
+      } catch {
         wx.showToast({ title: '操作失败', icon: 'none' });
       }
     } else {
@@ -167,7 +167,7 @@ Page({
         });
         this.setData({ isFavorited: true, favoriteId: res._id });
         wx.showToast({ title: '收藏成功 ♥', icon: 'success' });
-      } catch (e) {
+      } catch {
         wx.showToast({ title: '收藏失败', icon: 'none' });
       }
     }

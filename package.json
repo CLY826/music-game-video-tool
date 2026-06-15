@@ -1,0 +1,32 @@
+{
+  "name": "rhythm-practice",
+  "version": "1.0.0",
+  "description": "基于微信小程序 + 云开发搭建的音游视频练习辅助工具，支持 AB 循环播放、变速播放、AI 润色等功能。",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "lint": "eslint cloudfunctions/ pages/ --max-warnings 0",
+    "lint:backend": "eslint cloudfunctions/ --max-warnings 0",
+    "lint:frontend": "eslint pages/ --max-warnings 0",
+    "test:backend": "cd tests && npm run test:backend",
+    "test:frontend": "cd tests && npm run test:frontend",
+    "test:all": "cd tests && npm run test:all"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CLY826/music-game-video-tool.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CLY826/music-game-video-tool/issues"
+  },
+  "homepage": "https://github.com/CLY826/music-game-video-tool#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "eslint": "^9.39.4"
+  }
+}

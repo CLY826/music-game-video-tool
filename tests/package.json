@@ -6,10 +6,20 @@
     "test:backend": "jest --config jest.backend.config.js --coverage",
     "test:frontend": "jest --config jest.frontend.config.js --coverage",
     "test:all": "jest --config jest.backend.config.js --coverage && jest --config jest.frontend.config.js --coverage",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "test:backend:ci": "jest --config jest.backend.config.js --ci --coverage",
+    "test:frontend:ci": "jest --config jest.frontend.config.js --ci --coverage",
+    "lint": "eslint ../cloudfunctions/ ../pages/ --max-warnings 0",
+    "lint:backend": "eslint ../cloudfunctions/ --max-warnings 0",
+    "lint:frontend": "eslint ../pages/ --max-warnings 0"
   },
   "devDependencies": {
+    "eslint": "^9.0.0",
     "jest": "^29.7.0",
     "jest-environment-node": "^29.7.0"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.39.4",
+    "globals": "^17.6.0"
   }
 }

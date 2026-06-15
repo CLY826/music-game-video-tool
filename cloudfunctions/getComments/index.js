@@ -4,7 +4,7 @@ const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 
-exports.main = async (event, context) => {
+exports.main = async (event, _context) => {
   const { videoId, page = 0, pageSize = 20 } = event;
   if (!videoId) return { code: -1, message: 'videoId 不能为空' };
 

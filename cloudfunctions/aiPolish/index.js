@@ -63,7 +63,7 @@ exports.main = async (event) => {
         res.on('end', () => {
           try {
             resolve(JSON.parse(data));
-          } catch (e) {
+          } catch {
             reject(new Error('解析响应失败: ' + data.slice(0, 300)));
           }
         });
