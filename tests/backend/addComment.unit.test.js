@@ -71,7 +71,7 @@ describe('addComment 单元测试 - 正常写入', () => {
 
 // ─────────────────────────────────────────────
 describe('addComment 单元测试 - 异常处理', () => {
-  test('UT-17: 数据库写入异常时，返回 code -1 和错误信息', async () => {
+  test('UT-17: 数据库写入异常时，返回通用错误提示（不暴露内部细节）', async () => {
     const db = mockCloud.database();
     db.collection('comment').add.mockRejectedValue(new Error('DB write failed'));
 
@@ -80,6 +80,6 @@ describe('addComment 单元测试 - 异常处理', () => {
       content: '正常评论'
     });
     expect(result.code).toBe(-1);
-    expect(result.message).toBe('DB write failed');
+    expect(result.message).toBe('评论服务暂时不可用');
   });
 });

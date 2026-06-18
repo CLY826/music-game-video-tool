@@ -49,12 +49,12 @@ describe('getComments 单元测试 - 正常查询', () => {
 });
 
 describe('getComments 单元测试 - 异常处理', () => {
-  test('UT-27: 数据库异常时返回 code -1 和错误信息', async () => {
+  test('UT-27: 数据库异常时返回通用错误提示（不暴露内部细节）', async () => {
     const db = mockCloud.database();
     db.collection('comment').get.mockRejectedValue(new Error('permission denied'));
 
     const result = await getComments.main({ videoId: 'v001' });
     expect(result.code).toBe(-1);
-    expect(result.message).toBe('permission denied');
+    expect(result.message).toBe('查询服务暂时不可用');
   });
 });

@@ -4,15 +4,32 @@
 const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
-// TokenHub API 配置
+// TokenHub API 配置 — API Key 通过环境变量注入，不再硬编码
 const TOKENHUB_API_URL = 'https://tokenhub.tencentmaas.com/v1/chat/completions';
-const TOKENHUB_API_KEY = 'sk-lJpEZryLuMctRlGEbjx1J4gDql7sH5KrWwtFJ5BJ8SQLiewe';
+const TOKENHUB_API_KEY = process.env.TOKENHUB_API_KEY || '';
 
-exports.main = async (event) => {
+exports.main = async (event, _context) => {
+  const { OPENID } = cloud.getWXContext();
   const { text, songName, gameName } = event;
+
+  // 鉴权校验：拒绝未登录用户调用
+  if (!OPENID) {
+    return { code: -1, msg: '未授权调用' };
+  }
+
+  // API Key 检查：确保环境变量已配置
+  if (!TOKENHUB_API_KEY) {
+    console.error('TOKENHUB_API_KEY 环境变量未配置');
+    return { code: -1, msg: '服务配置错误' };
+  }
 
   if (!text || !text.trim()) {
     return { code: -1, msg: '请先输入备注内容' };
+  }
+
+  // 输入长度限制：防止滥用
+  if (text.trim().length > 200) {
+    return { code: -1, msg: '备注内容不能超过200字' };
   }
 
   // 拼接 prompt

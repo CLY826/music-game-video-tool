@@ -7,6 +7,9 @@
 
 jest.mock('https', () => ({ request: jest.fn() }));
 
+// 设置环境变量：测试时注入 API Key
+process.env.TOKENHUB_API_KEY = 'sk-test-api-key-for-api-test';
+
 const mockCloud = require('wx-server-sdk');
 const https = require('https');
 
@@ -135,13 +138,13 @@ describe('接口测试 - addComment', () => {
     expect(result.message).toMatch(/500字/);
   });
 
-  test('IT-09: 数据库写入异常，返回 code -1 和错误信息', async () => {
+  test('IT-09: 数据库写入异常，返回通用错误提示（不暴露内部细节）', async () => {
     const db = mockCloud.database();
     db.collection('comment').add.mockRejectedValue(new Error('write permission denied'));
 
     const result = await addComment.main({ videoId: 'video001', content: '正常评论' });
     expect(result.code).toBe(-1);
-    expect(result.message).toBe('write permission denied');
+    expect(result.message).toBe('评论服务暂时不可用');
   });
 });
 
@@ -160,14 +163,14 @@ describe('接口测试 - getVideos', () => {
     expect(result.total).toBe(1);
   });
 
-  test('IT-11: 请求失败 - 数据库异常，返回 code -1', async () => {
+  test('IT-11: 请求失败 - 数据库异常，返回通用错误提示（不暴露内部细节）', async () => {
     const db = mockCloud.database();
     db.collection('video').get.mockRejectedValue(new Error('network timeout'));
     db.collection('video').count.mockRejectedValue(new Error('network timeout'));
 
     const result = await getVideos.main({});
     expect(result.code).toBe(-1);
-    expect(result.message).toBe('network timeout');
+    expect(result.message).toBe('查询服务暂时不可用');
   });
 });
 

@@ -40,6 +40,7 @@ exports.main = async (_event, _context) => {
     };
   } catch (e) {
     console.error('login error', e);
-    return { openid: OPENID, userInfo: null };
+    // 不向客户端暴露内部错误详情，只返回通用提示
+    return { openid: OPENID, userInfo: null, errorMsg: '登录服务暂时不可用' };
   }
 };

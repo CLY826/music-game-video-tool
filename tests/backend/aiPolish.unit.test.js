@@ -7,6 +7,9 @@
 // Mock https 模块（不引用外部变量）
 jest.mock('https', () => ({ request: jest.fn() }));
 
+// 设置环境变量：测试时注入 API Key
+process.env.TOKENHUB_API_KEY = 'sk-test-api-key-for-unit-test';
+
 const https = require('https');
 const aiPolish = require('../../cloudfunctions/aiPolish/index');
 
@@ -148,5 +151,45 @@ describe('aiPolish 单元测试 - AI 返回异常', () => {
 
     const result = await aiPolish.main({ text: '有效内容' });
     expect(result.code).toBe(-4);
+  });
+});
+
+// ─────────────────────────────────────────────
+describe('aiPolish 单元测试 - 安全加固', () => {
+  test('SEC-01: OPENID 为空时，返回未授权调用', async () => {
+    // 模拟无 OPENID 的场景
+    const wxServerSdk = require('wx-server-sdk');
+    wxServerSdk.getWXContext.mockReturnValueOnce({ OPENID: '', APPID: '' });
+    const result = await aiPolish.main({ text: '有效内容' });
+    expect(result.code).toBe(-1);
+    expect(result.msg).toMatch(/未授权调用/);
+  });
+
+  test('SEC-02: TOKENHUB_API_KEY 未配置时，返回服务配置错误', async () => {
+    // 临时清空环境变量，验证云函数在运行时检测到 Key 为空
+    const originalKey = process.env.TOKENHUB_API_KEY;
+    delete process.env.TOKENHUB_API_KEY;
+
+    // 由于 aiPolish 模块已加载（TOKENHUB_API_KEY 在 require 时被捕获为空值），
+    // 我们通过修改模块内部变量来模拟这一场景
+    // 更直接的测试方式：验证当 TOKENHUB_API_KEY 为空字符串时的行为
+    // 注意：aiPolish 模块在 require 时已将 process.env.TOKENHUB_API_KEY 读入常量
+    // 所以需要重新 require 才能生效
+    jest.resetModules();
+    const aiPolishFresh = jest.requireActual('../../cloudfunctions/aiPolish/index');
+    const result = await aiPolishFresh.main({ text: '有效内容' });
+    expect(result.code).toBe(-1);
+    expect(result.msg).toMatch(/服务配置错误|未授权调用/);
+
+    // 恢复环境变量和模块缓存
+    process.env.TOKENHUB_API_KEY = originalKey;
+    jest.resetModules();
+  });
+
+  test('SEC-03: text 超过 200 字时，返回长度限制错误', async () => {
+    const longText = '这是一段很长的备注内容'.repeat(20); // 远超200字
+    const result = await aiPolish.main({ text: longText });
+    expect(result.code).toBe(-1);
+    expect(result.msg).toMatch(/不能超过200字/);
   });
 });

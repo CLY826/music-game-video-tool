@@ -55,13 +55,13 @@ describe('getVideos 单元测试 - 分页查询', () => {
 
 // ─────────────────────────────────────────────
 describe('getVideos 单元测试 - 异常处理', () => {
-  test('UT-22: 数据库查询异常时，返回 code -1 和错误信息', async () => {
+  test('UT-22: 数据库查询异常时，返回通用错误提示（不暴露内部细节）', async () => {
     const db = mockCloud.database();
     db.collection('video').get.mockRejectedValue(new Error('DB connection lost'));
     db.collection('video').count.mockRejectedValue(new Error('DB connection lost'));
 
     const result = await getVideos.main({});
     expect(result.code).toBe(-1);
-    expect(result.message).toBe('DB connection lost');
+    expect(result.message).toBe('查询服务暂时不可用');
   });
 });
