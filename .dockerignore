@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+
+# Node modules
+node_modules
+*/node_modules
+**/node_modules
+
+# 微信开发者工具配置
+project.private.config.json
+project.config.json
+
+# 构建产物
+dist
+build
+out
+
+# 日志
+*.log
+npm-debug.log*
+
+# 环境变量文件
+.env
+.env.local
+.env.*.local
+
+# 测试覆盖率
+coverage
+*.lcov
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# 临时文件
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Python 生成物（PPT 生成脚本）
+__pycache__
+*.pyc
+*.pptx
+
+# docs 不需要打包进镜像
+docs/
