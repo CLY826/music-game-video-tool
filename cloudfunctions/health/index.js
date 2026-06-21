@@ -28,7 +28,7 @@ exports.main = async (event, _context) => {
     const db = cloud.database();
     let dbStatus = 'unknown';
     try {
-      await db.collection('users').limit(1).get();
+      await db.collection('user').limit(1).get();
       dbStatus = 'connected';
     } catch (e) {
       dbStatus = 'disconnected';
