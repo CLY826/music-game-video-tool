@@ -63,13 +63,13 @@ exports.main = async (_event, _context) => {
     structuredLog('INFO', 'login 成功', { durationMs: duration });
 
     return {
-      open_id: OPENID,
+      openid: OPENID,
       userInfo: data[0] || null
     };
   } catch (e) {
     const duration = Date.now() - startTime;
     structuredLog('ERROR', 'login 失败', { error: e.message, durationMs: duration });
     // 不向客户端暴露内部错误详情，只返回通用提示
-    return { open_id: OPENID, userInfo: null, errorMsg: '登录服务暂时不可用' };
+    return { openid: OPENID, userInfo: null, errorMsg: '登录服务暂时不可用' };
   }
 };
