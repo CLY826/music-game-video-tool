@@ -11,69 +11,16 @@
 - [x] 结构化日志格式
 - [x] 日志级别配置
 
-**实现说明：**
-
-为所有 5 个云函数（login、getVideos、addComment、getComments、aiPolish）统一添加了 `structuredLog` 函数，输出 JSON 格式的结构化日志，支持 INFO / WARN / ERROR 三个日志级别：
-
-```javascript
-function structuredLog(level, message, extra = {}) {
-  const entry = {
-    time: new Date().toISOString(),
-    level,
-    service: 'functionName',
-    message,
-    ...extra
-  };
-  if (level === 'ERROR') console.error(JSON.stringify(entry));
-  else if (level === 'WARN') console.warn(JSON.stringify(entry));
-  else console.log(JSON.stringify(entry));
-}
-```
-
 ### 2. 健康检查
 
 - [x] /health 端点实现
 - [x] 健康检查逻辑
-
-**实现说明：**
-
-新增 `health` 云函数（`cloudfunctions/health/index.js`），通过微信云开发控制台调用，自动检查两项关键指标：
-
-1. **数据库连通性**：尝试查询 `user` 集合，判断数据库是否正常连接
-2. **环境变量配置**：检查 `TOKENHUB_API_KEY` 是否已配置
-
-返回示例（正常状态）：
-
-```json
-{
-  "code": 0,
-  "data": {
-    "status": "healthy",
-    "timestamp": "2026-06-21T17:30:00.000Z",
-    "version": "1.0.0",
-    "checks": {
-      "database": "connected",
-      "envVars": {
-        "TOKENHUB_API_KEY": true
-      }
-    }
-  }
-}
-```
 
 ### 3. 指标收集
 
 - [x] 请求计数
 - [x] 响应时间
 - [x] 错误率
-
-**实现说明：**
-
-微信云开发平台自带监控图表，在云开发控制台 → 云函数 → 监控面板中可直接查看：
-
-- **请求计数**：各云函数的调用次数统计（按时间维度展示）
-- **响应时间**：云函数平均响应耗时（P50 / P95 / P99）
-- **错误率**：云函数调用失败率，结合结构化日志中的 ERROR 级别日志可定位具体错误
 
 ## PR 链接
 

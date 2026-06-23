@@ -18,8 +18,14 @@ services:
       - NODE_ENV=development
     stdin_open: true
     tty: true
-    # 启动后保持运行
-    command: tail -f /dev/null
+    # 启动健康检查服务 + 保持容器运行
+    command: sh -c "node docker/health-server.js & tail -f /dev/null"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   # 测试服务：CI 友好，运行完即退出
   app-test:

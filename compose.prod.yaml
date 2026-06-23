@@ -1,0 +1,42 @@
+# 音游视频练习辅助小程序 - Docker 生产环境配置
+# 使用方式: docker compose -f compose.prod.yaml up -d
+#
+# 与开发环境 (docker-compose.yml) 的区别:
+#   1. 自动重启策略 (restart: always)
+#   2. 资源限制 (CPU / 内存)
+#   3. 健康检查 (healthcheck)
+#   4. 日志轮转 (防止日志撑满磁盘)
+#   5. NODE_ENV=production
+
+version: "3.8"
+
+services:
+  app-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rhythm-practice-prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - TOKENHUB_API_KEY=${TOKENHUB_API_KEY:-prod-placeholder}
+      - HEALTH_PORT=3000
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command: ["node", "docker/health-server.js"]
