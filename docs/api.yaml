@@ -1,0 +1,546 @@
+openapi: 3.0.0
+info:
+  title: 音游视频练习辅助小程序 API 文档
+  description: 基于微信云开发的云函数 API 文档（OpenAPI 3.0 格式）
+  version: 1.0.0
+servers:
+  - url: https://api.weixin.qq.com/cloudrun
+    description: 微信云开发环境（生产）
+  - url: http://localhost:3000
+    description: 本地开发环境（模拟）
+paths:
+  /cloud-function/login:
+    post:
+      summary: 用户登录
+      description: 通过微信云函数 login 实现用户登录，自动获取 openid 并写入/更新用户信息
+      operationId: login
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              description: 无需传参，openid 通过 wx.cloud.callFunction 的 WXContext 自动获取
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  openid:
+                    type: string
+                    description: 用户 openid
+                    example: oXXXX_xxxx
+                  userInfo:
+                    type: object
+                    nullable: true
+                    properties:
+                      _id:
+                        type: string
+                        description: 用户记录 ID
+                      open_id:
+                        type: string
+                      app_id:
+                        type: string
+                      nick_name:
+                        type: string
+                      avatar_url:
+                        type: string
+                      create_time:
+                        type: string
+                        format: date-time
+                      last_login_time:
+                        type: string
+                        format: date-time
+        '500':
+          description: 服务错误
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  openid:
+                    type: string
+                  userInfo:
+                    type: null
+                  errorMsg:
+                    type: string
+                    example: 登录服务暂时不可用
+  /cloud-function/getVideos:
+    post:
+      summary: 分页查询视频列表
+      description: 支持按音游分类过滤、关键词搜索、自定义排序和分页
+      operationId: getVideos
+      parameters:
+        - name: gameId
+          in: query
+          description: 按音游分类过滤（可选）
+          schema:
+            type: string
+            default: ''
+        - name: page
+          in: query
+          description: 页码（0-100）
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            maximum: 100
+        - name: pageSize
+          in: query
+          description: 每页条数（1-50）
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 50
+        - name: sortBy
+          in: query
+          description: 排序字段（白名单 createTime / songName）
+          schema:
+            type: string
+            default: createTime
+            enum: [createTime, songName]
+        - name: keyword
+          in: query
+          description: 搜索关键词（最长 50 字）
+          schema:
+            type: string
+            maxLength: 50
+            default: ''
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gameId:
+                  type: string
+                page:
+                  type: integer
+                pageSize:
+                  type: integer
+                sortBy:
+                  type: string
+                keyword:
+                  type: string
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [0]
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                        songName:
+                          type: string
+                        gameId:
+                          type: string
+                        gameName:
+                          type: string
+                        gameColor:
+                          type: string
+                        desc:
+                          type: string
+                        videoFileId:
+                          type: string
+                        thumbFileId:
+                          type: string
+                        duration:
+                          type: integer
+                        durationText:
+                          type: string
+                        commentCount:
+                          type: integer
+                        openid:
+                          type: string
+                        uploaderName:
+                          type: string
+                        uploaderAvatar:
+                          type: string
+                        createTime:
+                          type: string
+                          format: date-time
+                  total:
+                    type: integer
+                  hasMore:
+                    type: boolean
+        '500':
+          description: 服务错误
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [-1]
+                  message:
+                    type: string
+                    example: 查询服务暂时不可用
+  /cloud-function/addComment:
+    post:
+      summary: 发布评论
+      description: 对指定视频发布评论，需先登录
+      operationId: addComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [videoId, content]
+              properties:
+                videoId:
+                  type: string
+                  description: 视频 ID
+                content:
+                  type: string
+                  description: 评论内容（最长 500 字）
+                  maxLength: 500
+                authorName:
+                  type: string
+                  description: 作者昵称（默认"匿名用户"，最长 30 字）
+                  maxLength: 30
+                  default: 匿名用户
+                authorAvatar:
+                  type: string
+                  description: 作者头像 URL
+      responses:
+        '200':
+          description: 发布成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [0]
+                  id:
+                    type: string
+                    description: 评论记录 ID
+        '400':
+          description: 客户端错误
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [-1]
+                  message:
+                    type: string
+                    examples:
+                      - 未授权调用，请先登录
+                      - 参数不完整
+                      - 评论长度不能超过500字
+        '500':
+          description: 服务错误
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [-1]
+                  message:
+                    type: string
+                    example: 评论服务暂时不可用
+  /cloud-function/getComments:
+    post:
+      summary: 查询评论列表
+      description: 分页查询指定视频的评论列表
+      operationId: getComments
+      parameters:
+        - name: videoId
+          in: query
+          required: true
+          description: 视频 ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: 页码（0-100）
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            maximum: 100
+        - name: pageSize
+          in: query
+          description: 每页条数（1-50）
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 50
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [videoId]
+              properties:
+                videoId:
+                  type: string
+                page:
+                  type: integer
+                pageSize:
+                  type: integer
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [0]
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                        videoId:
+                          type: string
+                        content:
+                          type: string
+                        open_id:
+                          type: string
+                        authorName:
+                          type: string
+                        authorAvatar:
+                          type: string
+                        createTime:
+                          type: string
+                          format: date-time
+                  hasMore:
+                    type: boolean
+        '400':
+          description: 参数错误
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [-1]
+                  message:
+                    type: string
+                    example: videoId 不能为空
+  /cloud-function/aiPolish:
+    post:
+      summary: AI 润色备注
+      description: 调用 TokenHub AI API 对视频备注进行润色，需先登录
+      operationId: aiPolish
+      parameters:
+        - name: text
+          in: query
+          required: true
+          description: 待润色文本（最长 200 字）
+          schema:
+            type: string
+            maxLength: 200
+        - name: songName
+          in: query
+          description: 歌曲名称（用于上下文）
+          schema:
+            type: string
+        - name: gameName
+          in: query
+          description: 音游名称（用于上下文）
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  maxLength: 200
+                songName:
+                  type: string
+                gameName:
+                  type: string
+      responses:
+        '200':
+          description: 润色成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [0]
+                  msg:
+                    type: string
+                    example: 润色成功
+                  original:
+                    type: string
+                  polished:
+                    type: string
+        '400':
+          description: 客户端错误
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [-1]
+                  msg:
+                    type: string
+                    examples:
+                      - 未授权调用
+                      - 服务配置错误
+                      - 请先输入备注内容
+                      - 备注内容不能超过200字
+        '502':
+          description: AI 服务错误
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [-2]
+                  msg:
+                    type: string
+                    example: AI 服务返回错误
+        '503':
+          description: AI 返回格式异常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [-3]
+                  msg:
+                    type: string
+                    example: AI 返回格式异常
+        '504':
+          description: AI 润色失败（网络/超时）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [-4]
+                  msg:
+                    type: string
+                    example: AI 润色失败：网络连接超时
+  /cloud-function/health:
+    get:
+      summary: 健康检查
+      description: 检查云函数环境和数据库连通性
+      operationId: health
+      responses:
+        '200':
+          description: 健康检查成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [0]
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum: [healthy, degraded]
+                      timestamp:
+                        type: string
+                        format: date-time
+                      version:
+                        type: string
+                        example: '1.0.0'
+                      env:
+                        type: string
+                        example: development
+                      checks:
+                        type: object
+                        properties:
+                          database:
+                            type: string
+                            enum: [connected, disconnected]
+                          envVars:
+                            type: object
+                            properties:
+                              TOKENHUB_API_KEY:
+                                type: boolean
+                      uptime:
+                        type: number
+                        description: 运行时间（秒）
+        '500':
+          description: 健康检查失败
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    enum: [-1]
+                  msg:
+                    type: string
+                    example: 健康检查失败
+                  error:
+                    type: string
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: 错误码（-1 客户端错误，-2 AI API 错误，-3 格式异常，-4 网络异常）
+        message:
+          type: string
+          description: 错误信息
+  securitySchemes:
+    WechatCloud:
+      type: apiKey
+      in: header
+      name: X-WX-OPENID
+      description: 微信用户 openid（通过云函数 WXContext 自动获取，无需前端传递）
+security:
+  - WechatCloud: []
+externalDocs:
+  description: 微信云开发文档
+  url: https://developers.weixin.qq.com/miniprogram/dev/wxcloud/basis/getting-started.html

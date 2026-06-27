@@ -1,0 +1,7 @@
+{
+  "timeout": 10,
+  "envVariables": {},
+  "runtime": "Nodejs22.15.0",
+  "memorySize": 256,
+  "installDependency": true
+}
