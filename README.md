@@ -188,6 +188,3 @@ npm run lint
 | 云服务部署 | [12-cloud/](docs/contributions/12-cloud/) |
 | 监控配置 | [13-monitoring/](docs/contributions/13-monitoring/) |
 
-## 开源协议
-
-MIT License
